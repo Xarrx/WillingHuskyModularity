@@ -34,6 +34,19 @@ Prototype for simple menus in python.
       -> pop: .pop(0)
       -> peek: <stack>[0]
 """
+"""
+Basic logging utility
+"""
+import datetime
+
+def clear_old_log(path):
+  log = open(path, 'w')
+  log.close()
+
+def append_log(path, tag, s):
+  log = open(path, 'a')
+  log.write('[ {} ] {}: {}\n'.format(datetime.datetime.now(), tag, s))
+  log.close()
 
 def construct_row(opt):
   # construct the menu row string
@@ -101,10 +114,16 @@ def traverse_menu(mdict):
     'data' : {}
   }  # variables stored for use when the terminal state is reached
   flow_stack = ['main_menu'] # stack containing which menus have been visited
+  
+  # start loggin!
+  #log_name = 'mparse.log'
+  #clear_old_log(log_name)
 
   while True:
+
     # handle terminal state here
     if len(mdict[flow_stack[0]]['options']) == 0:
+
       # state is terminal
       if 'callback' in mdict[flow_stack[0]]:
         mdict[flow_stack[0]]['callback'](flow_storage)
@@ -118,14 +137,20 @@ def traverse_menu(mdict):
       print(construct_menu_string(mdict[flow_stack[0]]))
       i = input('> ')
       print('\n')
-
+      
+      #append_log(log_name, 'Logging', 'Option Selected: {}'.format(i))
       # validate input
       if i in metadata['acceptable_inputs']:
+
+        # handle quit option
         if i == 'q': 
+
+          # handle quit on main menu
           if flow_stack[0] == 'main_menu':
             # break loop if quit on main menu
             break
           else:
+            # cleanup the flow stack if q is 
             # pop the last menu key off of the stack
             flow_stack.pop(0)
 
@@ -138,10 +163,13 @@ def traverse_menu(mdict):
               flow_storage['data'][r].pop(0)
 
         else:
+
           # check if there is storage for option selected
           # first, get the option:
           opt = get_option(mdict[flow_stack[0]]['options'], i)
+
           track = []
+
           if opt and 'store' in opt:
             for key in opt['store'].keys():
               # get the value
@@ -163,8 +191,9 @@ def traverse_menu(mdict):
 
           flow_storage['tracking'].insert(0, track)
           flow_stack.insert(0, metadata['opt_flow_map'][i])
-  #print('************************')
-  #print('*Debug Info:')
-  #print('*Ending flow_stack: {}'.format(flow_stack))
-  #print('*Ending flow_storage: {}'.format(flow_storage))
+
+    #append_log(log_name, 'Logging', 'flow_storage.tracking {}'.format(flow_storage['tracking']))
+    #append_log(log_name, 'Logging', 'flow_storage.data {}'.format(flow_storage['data']))
+    #append_log(log_name, 'Logging', 'flow_stack {}'.format(flow_stack))
+    #append_log(log_name, 'Logging', '')
   
